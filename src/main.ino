@@ -191,7 +191,7 @@ void applyDeadTime() {
     else if (ns <= 5100) dtg = 0xC0 | ((ns - 2560) / 128);
     else dtg = 0xE0 | ((ns - 5120) / 512);
     if (dtg > 0xFF) dtg = 0xFF;
-    TIM1->BDTR = (dtg) | TIM_BDTR_DTEN | TIM_BDTR_MOE | TIM_BDTR_OSSR | TIM_BDTR_OSSI;
+    TIM1->BDTR = (dtg) | TIM_BDTR_MOE | TIM_BDTR_OSSR | TIM_BDTR_OSSI;
 }
 
 void applyPWM() {
@@ -199,7 +199,7 @@ void applyPWM() {
         TIM1->CCER &= ~TIM_CCER_CC1NE; // Disable complementary
         return;
     }
-    pinMode(PWM_CH1N, AF_PP);
+    pinMode(PWM_CH1N, OUTPUT);
     TIM1->CCER |= TIM_CCER_CC1NE; // Enable complementary
     applyDeadTime();
     pwmTimer.setOverflow(cfg.freq, HERTZ_FORMAT);
@@ -385,12 +385,11 @@ void saveSettings() {
     EEPROM.put(ADDR_DEAD_TIME, cfg.deadTime); EEPROM.put(ADDR_SOFT_START, cfg.softStart);
     EEPROM.put(ADDR_FAN_COOL, cfg.fanCooldown);
     EEPROM.put(ADDR_PID_KP, cfg.pidKp); EEPROM.put(ADDR_PID_KI, cfg.pidKi);
-    EEPROM.put(ADDR_PID_KD, cfg.pidKd); EEPROM.put(ADDR_PID_TARGET, cfg.pidTarget);
-    EEPROM.commit();
+    EEPROM.put(ADDR_PID_KD, cfg.pidKd);     EEPROM.put(ADDR_PID_TARGET, cfg.pidTarget);
 }
 void saveCalibration() {
     EEPROM.put(ADDR_CAL_TEMP_OFF, cal.tempOff); EEPROM.put(ADDR_CAL_TEMP_SC, cal.tempSc);
-    EEPROM.put(ADDR_CAL_CURR_OFF, cal.currOff); EEPROM.put(ADDR_CAL_CURR_SC, cal.currSc);    EEPROM.commit(); showConfirm("  CAL SAVED!  ");
+    EEPROM.put(ADDR_CAL_CURR_OFF, cal.currOff);     EEPROM.put(ADDR_CAL_CURR_SC, cal.currSc);    showConfirm("  CAL SAVED!  ");
 }
 void loadAll() {
     uint8_t m; EEPROM.get(ADDR_MAGIC, m);
@@ -502,7 +501,7 @@ void setup() {    Serial.begin(115200);
     pwmTimer.setOverflow(cfg.freq, HERTZ_FORMAT);
     pwmTimer.setCaptureCompare(1, 0, PERCENT_COMPARE_FORMAT);
     pwmTimer.resume();
-    pinMode(PWM_CH1N, AF_PP);
+    pinMode(PWM_CH1N, OUTPUT);
     lcdLine(0,"  INDUCTION HEATER  "); lcdLine(1,"   CONTROLLER v3.0  ");
     lcdLine(2,"  STM32F411 PRO    "); lcdLine(3,"   Initializing...  ");
     delay(1500); dirty = true;
